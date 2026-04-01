@@ -108,21 +108,24 @@ Observação: Use `-k` no curl para ignorar certificado dev local se necessário
 
 ---
 
-## Decisões técnicas
+## Decisões, racional e premissas
 
-- Uso de Interface para reduzir acoplamento
-- Camada de Service para regras de negócio
-- Uso de POST para enviar a senha com segurança no body
-- Testes unitários e de integração
-- Arquitetura em camadas
+Racional rápido
+- Arquitetura em camadas (Controller / Service / Validator) para seguir SRP: controller trata HTTP, service orquestra e validator contém regras. Isso facilita testes e evolução.
+- Uso de interfaces (`IPasswordValidator`, `IPasswordService`) para aplicar DIP — permite mock nos testes e trocar a implementação sem impactar consumidores.
+- Validador implementado com LINQ por legibilidade; para cenários de alta performance uma implementação single-pass com `HashSet<char>` seria preferível (trade-off documentado).
 
----
+Premissas importantes (documentadas)
+- Não há normalização Unicode: a validação opera por `char` .NET. Se for necessário suportar formas Unicode equivalentes, é preciso normalizar (NFC) antes de validar.
+- Apenas os caracteres especiais do conjunto `!@#$%^&*()-+` são considerados válidos; qualquer outro símbolo especial (ex.: `?`) torna a senha inválida.
+- Nenhum dado sensível é logado (não logar a senha em texto).
 
-## Justificativas e trade-offs
-- Validador implementado com expressões LINQ para legibilidade. Para produção de alta performance em strings muito longas, uma única iteração (state machine) seria preferível — trade-off discutido no README.
-- Repetição de caracteres é tratada de forma case-sensitive, pois o enunciado não especificou comportamento de normalização Unicode.
-- Decidi expor DTOs (Request/Response) para facilitar documentação e extensibilidade.
+Cobertura de testes
+- Unit: `PasswordValidator` (regras do enunciado + casos de borda) e `PasswordService` (mockando `IPasswordValidator`).
+- Integration: testes do controller com `WebApplicationFactory<Program>` cobrindo: senha válida, inválida, espaço em senha, caractere repetido e corpo ausente (400).
+- Recomendo adicionar 2–3 testes de sucesso adicionais (variações válidas) e um teste que assegure que caracteres especiais fora do conjunto são rejeitados.
 
+Como executar (resumo)
 ---
 
 ## Endpoint
