@@ -1,0 +1,28 @@
+[
+  {
+    "ContainingType": "PasswordValidatorApi.Controllers.PasswordController",
+    "Method": "Validate",
+    "RelativePath": "api/password/validate",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "PasswordValidatorApi.Models.PasswordRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "PasswordValidatorApi.Models.PasswordResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  }
+]
