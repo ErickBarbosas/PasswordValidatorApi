@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PasswordValidatorApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f8d58ced43f58083dc5d7b2a45d52933c838e8c0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+821c1592fe4718b6ea954462c5e74d0690c1e306")]
 [assembly: System.Reflection.AssemblyProductAttribute("PasswordValidatorApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PasswordValidatorApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

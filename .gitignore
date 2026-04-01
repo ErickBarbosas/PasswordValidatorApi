@@ -1,0 +1,51 @@
+# Visual Studio, Rider, VS Code
+.vs/
+.vscode/
+.idea/
+
+# Build outputs
+bin/
+obj/
+**/bin/
+**/obj/
+publish/
+artifacts/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.rsuser
+*.sln.docstates
+
+# NuGet
+packages/
+*.nupkg
+.nuget/
+
+# Test results / coverage
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Secrets and local settings
+secrets.json
+appsettings.*.Local.json
+appsettings.Development.json
+
+# IDE-specific
+*.sln.iml
+
+# Misc
+*.db
+*.bak
+*.tmp
