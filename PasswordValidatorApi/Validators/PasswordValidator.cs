@@ -4,19 +4,38 @@
     {
         public bool IsValid(string password)
         {
-            if (string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(password) || password.Length < 9)
                 return false;
 
             const string specialChars = "!@#$%^&*()-+";
 
-            return password.Length >= 9
-                && password.All(c => !char.IsWhiteSpace(c))
-                && password.Any(char.IsDigit)
-                && password.Any(char.IsLower)
-                && password.Any(char.IsUpper)
-                && password.Any(c => specialChars.Contains(c))
-                && password.Distinct().Count() == password.Length
-                && password.All(c => char.IsLetterOrDigit(c) || specialChars.Contains(c));
+            bool hasDigit = false;
+            bool hasLower = false;
+            bool hasUpper = false;
+            bool hasSpecial = false;
+
+            var seenChars = new HashSet<char>();
+
+            foreach (var c in password)
+            {
+                if (char.IsWhiteSpace(c))
+                    return false;
+
+                bool isSpecial = specialChars.Contains(c);
+
+                if (!char.IsLetterOrDigit(c) && !isSpecial)
+                    return false;
+
+                if (!seenChars.Add(c))
+                    return false;
+
+                if (char.IsDigit(c)) hasDigit = true;
+                else if (char.IsLower(c)) hasLower = true;
+                else if (char.IsUpper(c)) hasUpper = true;
+                else if (isSpecial) hasSpecial = true;
+            }
+
+            return hasDigit && hasLower && hasUpper && hasSpecial;
         }
     }
 }
