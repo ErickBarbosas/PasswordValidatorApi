@@ -46,11 +46,6 @@ A solução segue uma separação em camadas simples:
 
 Foram aplicados princípios SOLID básicos: `IPasswordValidator` e `IPasswordService` para reduzir acoplamento e facilitar testes.
 
-### O que foi alterado no código
-- `PasswordRequest.Password` marcado com `[Required]` para garantir que o `ModelState` retorne `400 Bad Request` quando o corpo vier sem a propriedade `password`.
-- `PasswordController.Validate` agora retorna `ActionResult<PasswordResponse>` e usa explicitamente o DTO `PasswordResponse` em vez de um objeto anônimo.
-- `Program.cs`: removidos registros redundantes de tipos concretos no DI e mantido apenas o registro via interfaces (`IPasswordValidator` e `IPasswordService`).
-
 ### Regras implementadas
 A senha é considerada válida quando satisfaz todas as regras abaixo:
 - Mínimo de 9 caracteres.
@@ -110,22 +105,32 @@ Observação: Use `-k` no curl para ignorar certificado dev local se necessário
 
 ## Decisões, racional e premissas
 
-Racional rápido
-- Arquitetura em camadas (Controller / Service / Validator) para seguir SRP: controller trata HTTP, service orquestra e validator contém regras. Isso facilita testes e evolução.
-- Uso de interfaces (`IPasswordValidator`, `IPasswordService`) para aplicar DIP — permite mock nos testes e trocar a implementação sem impactar consumidores.
-- Validador implementado com LINQ por legibilidade; para cenários de alta performance uma implementação single-pass com `HashSet<char>` seria preferível (trade-off documentado).
+### Racional rápido
+- Separei responsabilidades em `Controller` / `Service` / `Validator` para seguir SRP: controller trata HTTP, service orquestra e validator contém as regras, facilitando testes e manutenção.
+- Usei interfaces (`IPasswordValidator`, `IPasswordService`) para desacoplamento e para permitir mocks nos testes.
+- Escolhi single-pass (loop único) no validador para reduzir iterações/allocate e detectar erros cedo; isto é uma otimização prática sem alterar o contrato do enunciado.
 
-Premissas importantes (documentadas)
-- Não há normalização Unicode: a validação opera por `char` .NET. Se for necessário suportar formas Unicode equivalentes, é preciso normalizar (NFC) antes de validar.
-- Apenas os caracteres especiais do conjunto `!@#$%^&*()-+` são considerados válidos; qualquer outro símbolo especial (ex.: `?`) torna a senha inválida.
-- Nenhum dado sensível é logado (não logar a senha em texto).
+### Premissas importantes (o que está implementado)
+- Repetição é case-sensitive: `a` e `A` são considerados diferentes.
+- Não há normalização Unicode: a validação opera sobre `char` do .NET. Entradas com formas combinadas (ex.: `e` + acento) podem ser tratadas como diferentes. Emojis e símbolos fora do conjunto aceito podem ser rejeitados.
+- Apenas os caracteres especiais do conjunto `!@#$%^&*()-+` são considerados válidos; qualquer outro símbolo especial (ex.: `?`, emoji) torna a senha inválida.
+- A validação permite apenas letras, dígitos e os especiais acima — caracteres fora desse conjunto são recusados.
+- Não há logging de conteúdo sensível (não logamos a senha).
 
-Cobertura de testes
-- Unit: `PasswordValidator` (regras do enunciado + casos de borda) e `PasswordService` (mockando `IPasswordValidator`).
-- Integration: testes do controller com `WebApplicationFactory<Program>` cobrindo: senha válida, inválida, espaço em senha, caractere repetido e corpo ausente (400).
-- Recomendo adicionar 2–3 testes de sucesso adicionais (variações válidas) e um teste que assegure que caracteres especiais fora do conjunto são rejeitados.
+### Como executar (resumo)
+# Rodar API
+dotnet run --project PasswordValidatorApi
 
-Como executar (resumo)
+# Rodar testes (unit + integration)
+dotnet test
+
+### Cobertura de testes
+- Unit: `PasswordValidator` (regras do enunciado) e `PasswordService` (mockando `IPasswordValidator`).
+- Integration: testes do controller com `WebApplicationFactory<Program>` cobrindo cenários válidos/inválidos e corpo ausente (400).
+
+### Notas e próximos passos possíveis
+- Se for necessário suportar equivalência Unicode (ex.: normalizar acentos) ou tratar emojis como "1 caractere visual", é possível adicionar normalização (`NormalizationForm.FormC`) ou usar `StringInfo` para iterar text elements; isso aumenta complexidade e deve ser justificado pelo requisito.
+
 ---
 
 ## Endpoint
@@ -162,7 +167,6 @@ POST /api/password/validate
 - Versionamento de API
 - Docker
 - CI/CD pipeline
-- Tornar as regras configuráveis (por exemplo, via `IOptions`) para permitir variação sem deploy.
 - Suporte explícito a normalização Unicode quando necessário.
 - Logging e métricas para produção.
 - Policies de segurança e rate limiting.
